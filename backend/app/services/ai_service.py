@@ -9,12 +9,25 @@ from app.core.config import settings
 
 class AIService:
     def __init__(self) -> None:
-        self.enabled = bool(settings.openai_api_key)
-        self.llm = (
-            ChatOpenAI(model=settings.openai_model, api_key=settings.openai_api_key, temperature=0.2)
-            if self.enabled
-            else None
-        )
+        self.provider = settings.ai_provider.lower()
+        if self.provider == "openai":
+            self.enabled = bool(settings.openai_api_key)
+            self.llm = (
+                ChatOpenAI(model=settings.openai_model, api_key=settings.openai_api_key, temperature=0.2)
+                if self.enabled
+                else None
+            )
+        elif self.provider == "ollama":
+            self.enabled = True
+            self.llm = ChatOpenAI(
+                model=settings.ollama_model,
+                api_key="ollama",
+                base_url=f"{settings.ollama_base_url}/v1",
+                temperature=0.2,
+            )
+        else:
+            self.enabled = False
+            self.llm = None
 
     async def json_prompt(self, system: str, user: str, fallback: dict[str, Any]) -> dict[str, Any]:
         if not self.llm:
