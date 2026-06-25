@@ -1,0 +1,11 @@
+.env
+.DS_Store
+node_modules
+.next
+__pycache__
+*.pyc
+.venv
+postgres_data
+*.db
+*.sqlite
+*.sqlite3

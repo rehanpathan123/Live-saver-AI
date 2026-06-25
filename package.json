@@ -1,0 +1,10 @@
+{
+  "name": "life-saver-ai",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "sh scripts/dev-local.sh",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "cd backend && env DATABASE_URL=sqlite+aiosqlite:///./lifesaver.db .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000"
+  }
+}
