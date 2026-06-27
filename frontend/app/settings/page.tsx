@@ -4,7 +4,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import {
   Bell,
   BellOff,
@@ -89,7 +89,10 @@ export default function SettingsPage() {
         setWorkdayEnd(data.workday_end);
         setNotificationsEnabled(data.notifications_enabled);
       })
-      .catch(() => showToast("Failed to load profile", "error"))
+      .catch((err: unknown) => {
+        const msg = err instanceof ApiError ? err.message : "Failed to load profile";
+        showToast(msg, "error");
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -102,8 +105,9 @@ export default function SettingsPage() {
       });
       setProfile(updated);
       showToast("Profile updated successfully", "success");
-    } catch {
-      showToast("Failed to update profile", "error");
+    } catch (err: unknown) {
+      const msg = err instanceof ApiError ? err.message : "Failed to update profile";
+      showToast(msg, "error");
     } finally {
       setSaving(false);
     }
@@ -118,8 +122,9 @@ export default function SettingsPage() {
       });
       setProfile(updated);
       showToast("Preferences saved", "success");
-    } catch {
-      showToast("Failed to save preferences", "error");
+    } catch (err: unknown) {
+      const msg = err instanceof ApiError ? err.message : "Failed to save preferences";
+      showToast(msg, "error");
     } finally {
       setSaving(false);
     }
@@ -134,8 +139,9 @@ export default function SettingsPage() {
       });
       setProfile(updated);
       showToast("Notification settings saved", "success");
-    } catch {
-      showToast("Failed to save notification settings", "error");
+    } catch (err: unknown) {
+      const msg = err instanceof ApiError ? err.message : "Failed to save notification settings";
+      showToast(msg, "error");
     } finally {
       setSaving(false);
     }
@@ -161,7 +167,7 @@ export default function SettingsPage() {
       setConfirmPassword("");
       showToast("Password changed successfully", "success");
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to change password";
+      const msg = err instanceof ApiError ? err.message : "Failed to change password";
       showToast(msg, "error");
     } finally {
       setSaving(false);
