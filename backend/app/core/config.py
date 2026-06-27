@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     openai_model: str = "gpt-4o-mini"
     ollama_base_url: str = "http://localhost:11434"
-    ollama_model: str = "llama3"
+    ollama_model: str = "llama3.2"
     cors_origins_raw: str = "http://localhost:3000,http://127.0.0.1:3000"
     google_client_id: str = ""
     google_client_secret: str = ""

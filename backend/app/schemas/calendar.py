@@ -17,3 +17,10 @@ class CalendarEventResponse(BaseModel):
 class CalendarSyncRequest(BaseModel):
     provider: str = "google"
     access_token: str | None = None
+
+
+class CalendarEventCreate(BaseModel):
+    title: str
+    start_at: datetime
+    end_at: datetime
+    provider: str = "manual"
