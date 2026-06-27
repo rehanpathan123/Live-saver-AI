@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import ai, analytics, auth, calendar, tasks
+from app.api.routes import ai, analytics, auth, calendar, tasks, users
 from app.core.config import settings
 from app.db.base import Base
 from app.db.session import engine
@@ -26,6 +26,7 @@ app.include_router(tasks.router, prefix="/tasks", tags=["Tasks"])
 app.include_router(ai.router, prefix="/ai", tags=["AI"])
 app.include_router(calendar.router, prefix="/calendar", tags=["Calendar"])
 app.include_router(analytics.router, prefix="/analytics", tags=["Analytics"])
+app.include_router(users.router, prefix="/users", tags=["Users"])
 
 
 @app.on_event("startup")
