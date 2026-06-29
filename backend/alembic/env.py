@@ -24,7 +24,6 @@ _sync_url = _make_sync_url(settings.database_url)
 # in the URL (like URL-encoded %40) must be escaped as %% to avoid ValueError.
 config.set_main_option("sqlalchemy.url", _sync_url.replace("%", "%%"))
 
-
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
