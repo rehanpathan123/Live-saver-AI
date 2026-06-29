@@ -19,7 +19,10 @@ def _make_sync_url(url: str) -> str:
         url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
     return url
 
-config.set_main_option("sqlalchemy.url", _make_sync_url(settings.database_url))
+_sync_url = _make_sync_url(settings.database_url)
+# configparser uses % for interpolation (e.g. %(var)s), so literal % chars
+# in the URL (like URL-encoded %40) must be escaped as %% to avoid ValueError.
+config.set_main_option("sqlalchemy.url", _sync_url.replace("%", "%%"))
 
 
 if config.config_file_name is not None:
@@ -29,14 +32,14 @@ target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
-    context.configure(url=config.get_main_option("sqlalchemy.url"), target_metadata=target_metadata, literal_binds=True)
+    context.configure(url=_sync_url, target_metadata=target_metadata, literal_binds=True)
     with context.begin_transaction():
         context.run_migrations()
 
 
 def run_migrations_online() -> None:
     section = config.get_section(config.config_ini_section, {})
-    section["sqlalchemy.url"] = config.get_main_option("sqlalchemy.url")
+    section["sqlalchemy.url"] = _sync_url
     connectable = engine_from_config(section, prefix="sqlalchemy.", poolclass=pool.NullPool)
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
