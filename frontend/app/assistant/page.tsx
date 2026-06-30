@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Bot, CalendarPlus, Flame, Loader2, Sparkles, Globe, Plus,
   CalendarDays, Clock, Sun, Moon, Zap, BookOpen, Users, Heart,
@@ -26,6 +26,7 @@ function getCatStyle(cat: string) {
 }
 
 export default function AssistantPage() {
+  const queryClient = useQueryClient();
   // ── Shared state ─────────────────────────────────────────────────────────
   const [language, setLanguage] = useState("English");
   const [result, setResult]     = useState<unknown>(null);
@@ -82,6 +83,33 @@ export default function AssistantPage() {
       api("/tasks", { method: "POST", body: JSON.stringify(newTask) }),
     onSuccess: () => alert("Task added to list successfully!"),
     onError: (err: any) => alert(`Could not create task: ${err.message}`),
+  });
+
+  const saveDailySchedule = useMutation({
+    mutationFn: (slots: { time: string; activity: string; duration_minutes: number; category: string }[]) => {
+      const today = new Date();
+      const payload = slots.map((slot) => {
+        const [hours, minutes] = slot.time.split(":").map(Number);
+        const start = new Date(today);
+        start.setHours(hours, minutes, 0, 0);
+        const end = new Date(start.getTime() + slot.duration_minutes * 60 * 1000);
+        return {
+          title: slot.activity,
+          start_at: start.toISOString(),
+          end_at: end.toISOString(),
+          provider: "manual",
+        };
+      });
+      return api("/calendar/events/bulk", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+    },
+    onSuccess: () => {
+      alert("Daily schedule applied to your calendar successfully!");
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+    },
+    onError: (err: any) => alert(`Could not save daily schedule: ${err.message || err}`),
   });
 
   const isAssistantLoading = parse.isPending || warm.isPending || panic.isPending || schedule.isPending;
@@ -150,6 +178,19 @@ export default function AssistantPage() {
               ))}
             </div>
           )}
+
+          <Button
+            onClick={() => saveDailySchedule.mutate(slots)}
+            disabled={saveDailySchedule.isPending}
+            className="w-full bg-accent text-black hover:bg-accent/90 mt-3"
+          >
+            {saveDailySchedule.isPending ? (
+              <Loader2 size={16} className="animate-spin text-black" />
+            ) : (
+              <CalendarPlus size={16} />
+            )}
+            Save Routine to My Daily Schedule
+          </Button>
         </div>
       );
     }

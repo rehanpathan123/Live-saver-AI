@@ -42,6 +42,30 @@ async def create_event(
     return event
 
 
+@router.post("/events/bulk", response_model=list[CalendarEventResponse])
+async def create_events_bulk(
+    payload: list[CalendarEventCreate],
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> list[CalendarEvent]:
+    events = []
+    for item in payload:
+        event = CalendarEvent(
+            user_id=user.id,
+            provider=item.provider,
+            external_id=f"manual-{uuid4()}",
+            title=item.title,
+            start_at=item.start_at,
+            end_at=item.end_at,
+        )
+        db.add(event)
+        events.append(event)
+    await db.commit()
+    for event in events:
+        await db.refresh(event)
+    return events
+
+
 @router.post("/sync", response_model=list[CalendarEventResponse])
 async def sync(payload: CalendarSyncRequest, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)) -> list[CalendarEvent]:
     incoming = await sync_calendar(payload.provider, payload.access_token)
